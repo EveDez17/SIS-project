@@ -40,7 +40,6 @@ class EmployeeRole(models.Model):
     
 
 class User(AbstractUser):
-    
     class Role(models.TextChoices):
         WAREHOUSE_COMMON = "WAREHOUSE_COMMON", _('Warehouse common')
         GATEHOUSE = "GATEHOUSE", _('Gatehouse')
@@ -56,7 +55,7 @@ class User(AbstractUser):
 
     role = models.CharField(_('Role'), max_length=100, choices=Role.choices, default=Role.WAREHOUSE_COMMON)
     name = models.CharField(_("Name of User"), blank=True, max_length=255)
-    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Department"))
+    department = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Department"))
     phone_number = models.CharField(_("Phone Number"), max_length=15, blank=True, null=True)
     
     def get_absolute_url(self):
@@ -69,52 +68,53 @@ class User(AbstractUser):
         verbose_name = _('user')
         verbose_name_plural = _('users')
 
+# Abstract Base Class for Profiles
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="%(class)s_profile")
+    preferred_interface_complexity = models.CharField(max_length=100, choices=[('simple', 'Simple'), ('advanced', 'Advanced')], default='simple')
+    needs_real_time_alerts = models.BooleanField(default=True)
+    preferred_learning_style = models.CharField(max_length=100, choices=[('visual', 'Visual'), ('textual', 'Textual'), ('hands_on', 'Hands-On')], default='visual')
+    preferred_communication_method = models.CharField(max_length=100, choices=[('email', 'Email'), ('sms', 'SMS'), ('app', 'App')], default='email')
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        abstract = True
+
+# Role-specific Profile Definitions
+class WarehouseCommonProfile(UserProfile):
+    operational_efficiency_tools = models.TextField(help_text="Tools and features preferred for enhancing operational efficiency.")
+
+class GatehouseProfile(UserProfile):
+    access_level = models.CharField(max_length=100)
+
+class ReceptionistProfile(UserProfile):
+    shift_hours = models.CharField(max_length=100)
+
+class WarehouseOperativeProfile(UserProfile):
+    shift_hours = models.CharField(max_length=100)
+
+class WarehouseAdminProfile(UserProfile):
+    shift_hours = models.CharField(max_length=100)
+
+class WarehouseTeamLeaderProfile(UserProfile):
+    shift_hours = models.CharField(max_length=100)
+
+class WarehouseManagerProfile(UserProfile):
+    shift_hours = models.CharField(max_length=100)
+
+class InventoryAdminProfile(UserProfile):
+    shift_hours = models.CharField(max_length=100)
+
+class InventoryTeamLeaderProfile(UserProfile):
+    shift_hours = models.CharField(max_length=100)
+
+class InventoryManagerProfile(UserProfile):
+    shift_hours = models.CharField(max_length=100)
+
+class OperationalManagerProfile(UserProfile):
+    shift_hours = models.CharField(max_length=100)
+
+
 # Custom related_name definitions
 User._meta.get_field('groups').remote_field.related_name = 'custom_user_groups'
 User._meta.get_field('user_permissions').remote_field.related_name = 'custom_user_user_permissions'
-
-class WarehouseCommonProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='warehouse_common_profile')
-    department = models.TextField()
-
-class GatehouseProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='gatehouse_profile')
-    access_level = models.CharField(max_length=100)
-
-class ReceptionistProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='receptionist_profile')
-    shift_hours = models.CharField(max_length=100)
-    
-class WarehouseOperativeProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='receptionist_profile')
-    shift_hours = models.CharField(max_length=100)
-    
-class WarehouseAdminProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='receptionist_profile')
-    shift_hours = models.CharField(max_length=100)
-    
-class WarehouseTeamLeaderProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='receptionist_profile')
-    shift_hours = models.CharField(max_length=100)
-    
-class WarehouseManagerProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='receptionist_profile')
-    shift_hours = models.CharField(max_length=100)
-    
-class InventoryAdminProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='receptionist_profile')
-    shift_hours = models.CharField(max_length=100)
-    
-class InventoryTeamLeaderProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='receptionist_profile')
-    shift_hours = models.CharField(max_length=100)
-    
-class InventoryManageProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='receptionist_profile')
-    shift_hours = models.CharField(max_length=100)
-    
-class OperationalManagerProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='receptionist_profile')
-    shift_hours = models.CharField(max_length=100)
-
-
